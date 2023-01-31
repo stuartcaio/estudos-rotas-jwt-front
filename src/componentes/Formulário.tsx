@@ -14,7 +14,7 @@ function Formulário(props: any){
     const [email, setEmail] = useState<string>('');
     const [senha, setSenha] = useState<string>('');
 
-    function aoEnviar(e: any){
+    function aoEnviar(e: any, URL: any){
         e.preventDefault();
 
         const usuarios = {
@@ -23,40 +23,62 @@ function Formulário(props: any){
             senha
         }
 
-        api.post('logar', usuarios).then((resposta) => {
-            console.log(resposta);
-            
-            setEmail('');
-            setSenha('');
+        if(URL === 'logar'){
+            api.post('logar', usuarios).then((resposta) => {
+                console.log(resposta);
+                
+                setEmail('');
+                setSenha('');
+    
+                window.location.href='/sistema';
+            }).catch(() => {
+                alert('E-mail ou senha incorretos.');
+            });
+        }
 
-            window.location.href='/sistema';
-        })
+        if(URL === 'registrar'){
+            api.post('adicionar', usuarios).then((resposta) => {
+                console.log(resposta);
+                
+                setNome('');
+                setEmail('');
+                setSenha('');
+    
+                window.location.href='/logar';
+            }).catch((erro) => {
+                if(erro?.resposta?.data?.menssage){
+                    alert(erro.resposta.data?.menssage);
+                } else{
+                    alert('Aconteceu um erro ao efetuar o login.');
+                }
+            });
+        }
     }
 
     function verificaValor(nomeDoInput: string){
-        if(nomeDoInput == 'nome'){
+        if(nomeDoInput === 'nome'){
             return nome;
         }
 
-        if(nomeDoInput == 'email'){
+        if(nomeDoInput === 'email'){
             return email;
         }
 
-        if(nomeDoInput == 'senha'){
+        if(nomeDoInput === 'senha'){
             return senha;
         }
     }
 
     function verificaSetValor(e: any, nomeDoInput: string | number){
-        console.log(nome);
-        console.log(email);
-        console.log(senha)
+        if(nomeDoInput === 'nome'){
+            return setNome(e);
+        }
 
-        if(nomeDoInput == 'email'){
+        if(nomeDoInput === 'email'){
             return setEmail(e);
         }
 
-        if(nomeDoInput == 'senha'){
+        if(nomeDoInput === 'senha'){
             return setSenha(e);
         }
     }
@@ -71,19 +93,10 @@ function Formulário(props: any){
 
     return(
         <Corpo>
-            {props.url == 'registrar' &&
-            <Formulario action={'http://localhost:8080/adicionar'} method="post">
+            <Formulario onSubmit={(e: any) => aoEnviar(e, props.url)} method="post">
                 {mostraInputs()}
                 <Botão type="submit">Enviar</Botão>
             </Formulario>
-            }
-
-            {props.url == 'logar' &&
-            <Formulario onSubmit={(e: any) => aoEnviar(e)} method="post">
-                {mostraInputs()}
-                <Botão type="submit">Enviar</Botão>
-            </Formulario>
-            }
         </Corpo>
     );
 }
